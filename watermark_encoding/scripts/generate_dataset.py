@@ -140,3 +140,23 @@ with open(METADATA_PATH, "w") as f:
 
 print(f"\nDone. Generated {count} images.")
 print(f"Metadata saved to {METADATA_PATH}")
+# --- GENERATE BASELINE (unwatermarked) IMAGES ---
+print("\nGenerating baseline unwatermarked images...")
+
+BASELINE_DIR = Path("watermark_encoding/data/baseline")
+BASELINE_DIR.mkdir(parents=True, exist_ok=True)
+
+pipe.set_adapters(adapter_names, adapter_weights=[0.0] * 8)
+
+for prompt_idx, prompt in enumerate(PROMPTS):
+    generator = torch.Generator(device=DEVICE).manual_seed(SEED + prompt_idx)
+    image = pipe(
+        prompt,
+        num_inference_steps=NUM_INFERENCE_STEPS,
+        generator=generator,
+    ).images[0]
+    filename = f"baseline_p{prompt_idx:02d}.png"
+    image.save(BASELINE_DIR / filename)
+    print(f"Saved {filename}")
+
+print("Baseline generation done.")
